@@ -1,0 +1,16 @@
+{
+  "name": "realestate-project-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fullstack Real Estate Platform (99acres & NoBroker inspired)",
+  "scripts": {
+    "db:start": "powershell -ExecutionPolicy Bypass -File scripts/start-db.ps1",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:build": "npm --prefix backend run build",
+    "backend:migrate": "npm --prefix backend run prisma:push",
+    "backend:seed": "npm --prefix backend run seed",
+    "backend:seed:50k": "npm --prefix backend run seed:50k",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build"
+  }
+}

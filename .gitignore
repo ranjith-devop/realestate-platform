@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Next.js & Frontend builds
+.next/
+*/.next/
+out/
+build/
+
+# Backend builds
+dist/
+*/dist/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*/*.env
+*/*.env.*
+!*/*.env.example
+
+# Logs & Database
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.pgdata/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

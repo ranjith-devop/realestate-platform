@@ -1,0 +1,138 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  BUYER
+  AGENT
+  OWNER
+  ADMIN
+}
+
+enum ListingType {
+  SALE
+  RENT
+}
+
+enum PropertyType {
+  APARTMENT
+  INDEPENDENT_HOUSE
+  VILLA
+  PLOT
+  COMMERCIAL
+}
+
+enum Furnishing {
+  UNFURNISHED
+  SEMI_FURNISHED
+  FULLY_FURNISHED
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  UNDER_OFFER
+  SOLD
+  RENTED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  phone         String?
+  role          Role           @default(BUYER)
+  avatar        String?
+  properties    Property[]     @relation("OwnerProperties")
+  refreshTokens RefreshToken[]
+  leadsSent     Lead[]         @relation("BuyerLeads")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Property {
+  id              String         @id @default(uuid())
+  title           String
+  description     String
+  listingType     ListingType    @default(SALE)
+  propertyType    PropertyType   @default(APARTMENT)
+  price           Float
+  pricePerSqFt    Float?
+  bedrooms        Int            @default(0)
+  bathrooms       Int            @default(0)
+  balconies       Int            @default(0)
+  superAreaSqFt   Float
+  carpetAreaSqFt  Float?
+  furnishing      Furnishing     @default(SEMI_FURNISHED)
+  totalFloors     Int?
+  floorNumber     Int?
+  address         String
+  locality        String
+  city            String
+  state           String
+  pincode         String
+  latitude        Float?
+  longitude       Float?
+  status          PropertyStatus @default(AVAILABLE)
+  amenities       String[]       @default([])
+  images          Json           @default("[]")
+  viewsCount      Int            @default(0)
+  ownerId         String
+  owner           User           @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
+  leads           Lead[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([city, status, price])
+  @@index([city, propertyType, bedrooms])
+  @@index([city, locality])
+  @@index([ownerId])
+  @@index([status, createdAt])
+  @@index([price])
+}
+
+model Lead {
+  id         String     @id @default(uuid())
+  propertyId String
+  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  buyerId    String?
+  buyer      User?      @relation("BuyerLeads", fields: [buyerId], references: [id], onDelete: SetNull)
+  name       String
+  email      String
+  phone      String
+  message    String
+  status     LeadStatus @default(NEW)
+  ipAddress  String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([propertyId, createdAt])
+  @@index([email, propertyId, createdAt])
+  @@index([buyerId])
+}
