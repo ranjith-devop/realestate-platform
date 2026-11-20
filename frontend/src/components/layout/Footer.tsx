@@ -56,7 +56,7 @@ export const Footer: React.FC = () => {
             <div className="text-xs text-gray-500">
               API Docs:{" "}
               <a
-                href="https://realestate-platform-4.onrender.com/api-docs"
+                href="https://realestate-platform-jv8l.onrender.com/api-docs"
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-400 hover:underline"
