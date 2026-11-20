@@ -170,30 +170,12 @@ export class AdminService {
   }
 
   /**
-   * Promote or change user role.
+   * Role modification is strictly disabled to preserve isolation & account integrity.
    */
-  static async updateUserRole(userId: string, newRole: Role, adminId: string) {
-    if (userId === adminId && newRole !== Role.ADMIN) {
-      throw new Error("You cannot demote your own SuperAdmin account.");
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new Error("User not found.");
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: { role: newRole },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    });
-
-    return updated;
+  static async updateUserRole(_userId: string, _newRole: Role, _adminId: string) {
+    throw new Error(
+      "Role modification is not permitted. Account roles are permanently fixed upon registration to ensure data isolation."
+    );
   }
 
   /**

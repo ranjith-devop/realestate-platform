@@ -3,13 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { api } from "../../lib/api";
-import { AdminUserItem, Role } from "../../types";
+import { AdminUserItem } from "../../types";
 import { formatDate } from "../../lib/utils";
 import {
   Search,
-  Filter,
   Trash2,
-  Shield,
   Loader2,
   CheckCircle,
   AlertCircle,
@@ -61,26 +59,6 @@ export const AdminUsersTable: React.FC = () => {
     e.preventDefault();
     setPage(1);
     fetchUsers();
-  };
-
-  const handleRoleChange = async (userId: string, newRole: Role) => {
-    try {
-      setActionLoading(userId);
-      setFeedback(null);
-      await api.updateAdminUserRole(userId, newRole);
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-      );
-      setFeedback({ type: "success", msg: "User role updated successfully" });
-      setTimeout(() => setFeedback(null), 3000);
-    } catch (err: unknown) {
-      setFeedback({
-        type: "error",
-        msg: err instanceof Error ? err.message : "Failed to update role",
-      });
-    } finally {
-      setActionLoading(null);
-    }
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
@@ -211,25 +189,19 @@ export const AdminUsersTable: React.FC = () => {
                   </td>
 
                   <td className="py-3.5 pr-3">
-                    <select
-                      value={u.role}
-                      disabled={actionLoading === u.id}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
-                      className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border outline-none cursor-pointer ${
+                    <span
+                      className={`inline-flex items-center text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${
                         u.role === "ADMIN"
-                          ? "bg-purple-50 text-purple-800 border-purple-200 font-black"
+                          ? "bg-purple-100 text-purple-900 border-purple-300 font-black shadow-xs"
                           : u.role === "AGENT"
-                          ? "bg-amber-50 text-amber-800 border-amber-200"
+                          ? "bg-amber-100 text-amber-900 border-amber-300"
                           : u.role === "OWNER"
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                          : "bg-blue-50 text-blue-800 border-blue-200"
+                          ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                          : "bg-blue-100 text-blue-900 border-blue-300"
                       }`}
                     >
-                      <option value="BUYER">BUYER</option>
-                      <option value="OWNER">OWNER</option>
-                      <option value="AGENT">AGENT</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
+                      {u.role}
+                    </span>
                   </td>
 
                   <td className="py-3.5 pr-3 text-gray-600 font-medium">

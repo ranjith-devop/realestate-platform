@@ -40,31 +40,11 @@ export class AdminController {
     }
   }
 
-  static async updateUserRole(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const targetUserId = String(req.params.id);
-      const newRole = req.body.role as Role;
-      const adminId = req.user?.userId;
-
-      if (!adminId) {
-        ApiResponseHelper.unauthorized(res);
-        return;
-      }
-
-      if (!Object.values(Role).includes(newRole)) {
-        ApiResponseHelper.badRequest(res, `Invalid role. Allowed: ${Object.values(Role).join(", ")}`);
-        return;
-      }
-
-      const updated = await AdminService.updateUserRole(targetUserId, newRole, adminId);
-      ApiResponseHelper.success(res, updated, `User role updated to ${newRole}`);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("demote your own")) {
-        ApiResponseHelper.badRequest(res, error.message);
-        return;
-      }
-      next(error);
-    }
+  static async updateUserRole(_req: Request, res: Response, _next: NextFunction): Promise<void> {
+    ApiResponseHelper.badRequest(
+      res,
+      "Role modification is not permitted. Account roles are permanently fixed upon registration to ensure data isolation."
+    );
   }
 
   static async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
