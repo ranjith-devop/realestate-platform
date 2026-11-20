@@ -11,6 +11,7 @@ import {
   LogOut,
   LayoutDashboard,
   UserCircle,
+  ShieldAlert,
   Menu,
   X,
   MapPin,
@@ -201,6 +202,17 @@ export const Navbar: React.FC = () => {
 
           {/* Right Action buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* SuperAdmin Quick Link */}
+            {user?.role === "ADMIN" && (
+              <Link
+                href="/admin"
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-md transition-all"
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-purple-200" />
+                <span>SuperAdmin</span>
+              </Link>
+            )}
+
             {/* Post Property: Only visible to OWNER, AGENT, or GUESTS */}
             {user?.role !== "BUYER" && (
               <Link
@@ -257,6 +269,17 @@ export const Navbar: React.FC = () => {
                       </div>
                     </div>
 
+                    {user?.role === "ADMIN" && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center space-x-2.5 px-4 py-2.5 text-sm text-purple-700 font-bold bg-purple-50 hover:bg-purple-100 transition-colors"
+                      >
+                        <ShieldAlert className="w-4 h-4 text-purple-600" />
+                        <span>SuperAdmin Console</span>
+                      </Link>
+                    )}
+
                     <Link
                       href="/dashboard"
                       onClick={() => setUserDropdownOpen(false)}
@@ -268,6 +291,8 @@ export const Navbar: React.FC = () => {
                           ? "Buyer Dashboard"
                           : user?.role === "AGENT"
                           ? "Agent Dashboard"
+                          : user?.role === "ADMIN"
+                          ? "Admin Dashboard"
                           : "Owner Dashboard"}
                       </span>
                     </Link>
@@ -398,6 +423,16 @@ export const Navbar: React.FC = () => {
                   <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 </div>
               </div>
+              {user?.role === "ADMIN" && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-bold text-purple-700 bg-purple-50 hover:bg-purple-100"
+                >
+                  <ShieldAlert className="w-5 h-5 text-purple-600" />
+                  <span>SuperAdmin Console</span>
+                </Link>
+              )}
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}

@@ -4,6 +4,8 @@ import {
   User,
   Lead,
   FilterState,
+  AdminPlatformStats,
+  AdminUserItem,
 } from "../types";
 
 const API_BASE_URL =
@@ -294,6 +296,56 @@ class ApiClient {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
+  }
+
+  // --- SuperAdmin APIs ---
+  async getAdminStats() {
+    return this.request<AdminPlatformStats>("/admin/stats");
+  }
+
+  async getAdminUsers(params: { page?: number; limit?: number; search?: string; role?: string }) {
+    const query = new URLSearchParams();
+    if (params.page) query.append("page", String(params.page));
+    if (params.limit) query.append("limit", String(params.limit));
+    if (params.search) query.append("search", params.search);
+    if (params.role) query.append("role", params.role);
+    return this.request<AdminUserItem[]>(`/admin/users?${query.toString()}`);
+  }
+
+  async updateAdminUserRole(userId: string, role: string) {
+    return this.request<{ id: string; role: string }>(`/admin/users/${userId}/role`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  async deleteAdminUser(userId: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/admin/users/${userId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getAdminProperties(params: { page?: number; limit?: number; search?: string; status?: string }) {
+    const query = new URLSearchParams();
+    if (params.page) query.append("page", String(params.page));
+    if (params.limit) query.append("limit", String(params.limit));
+    if (params.search) query.append("search", params.search);
+    if (params.status) query.append("status", params.status);
+    return this.request<Property[]>(`/admin/properties?${query.toString()}`);
+  }
+
+  async deleteAdminProperty(propertyId: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/admin/properties/${propertyId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getAdminLeads(params: { page?: number; limit?: number; status?: string }) {
+    const query = new URLSearchParams();
+    if (params.page) query.append("page", String(params.page));
+    if (params.limit) query.append("limit", String(params.limit));
+    if (params.status) query.append("status", params.status);
+    return this.request<Lead[]>(`/admin/leads?${query.toString()}`);
   }
 }
 

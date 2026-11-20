@@ -175,3 +175,64 @@ export interface FilterState {
   page: number;
   limit: number;
 }
+
+export interface AdminPlatformStats {
+  users: {
+    total: number;
+    buyers: number;
+    owners: number;
+    agents: number;
+    admins: number;
+  };
+  properties: {
+    total: number;
+    available: number;
+    underOffer: number;
+    sold: number;
+    rented: number;
+    totalAssetValue: number;
+    averagePrice: number;
+  };
+  leads: {
+    total: number;
+    new: number;
+    contacted: number;
+    closed: number;
+  };
+  recentUsers: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: Role;
+    avatar?: string | null;
+    createdAt: string;
+  }>;
+  recentProperties: Array<{
+    id: string;
+    title: string;
+    price: number;
+    city: string;
+    status: PropertyStatus;
+    createdAt: string;
+    owner: {
+      id: string;
+      name: string;
+      role: Role;
+    };
+  }>;
+}
+
+export interface AdminUserItem {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: Role;
+  avatar?: string | null;
+  city?: string | null;
+  createdAt: string;
+  _count: {
+    properties: number;
+    leadsSent: number;
+  };
+}
