@@ -21,6 +21,7 @@ import {
   Eye,
   CheckCircle2,
   MessageSquare,
+  Briefcase,
 } from "lucide-react";
 
 interface PropertyCardProps {
@@ -35,6 +36,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const isRent = property.listingType === "RENT";
+  const isAgentListing = property.owner?.role === "AGENT";
   const coverImage = getPropertyCoverImage(property.images, property.propertyType);
   const fallback = getPropertyFallbackImages(property.propertyType)[0];
 
@@ -76,15 +78,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             <span
               className={`text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-md text-white uppercase shadow-sm ${
-                isRent ? "bg-amber-600" : "bg-blue-600"
+                isRent ? "bg-indigo-600" : "bg-blue-600"
               }`}
             >
               {isRent ? "For Rent" : "For Sale"}
             </span>
-            <span className="inline-flex items-center space-x-1 text-[11px] font-semibold px-2 py-1 rounded-md bg-emerald-500/90 text-white backdrop-blur-sm shadow-sm">
-              <ShieldCheck className="w-3 h-3" />
-              <span>Verified</span>
-            </span>
+
+            {isAgentListing ? (
+              <span className="inline-flex items-center space-x-1 text-[11px] font-bold px-2 py-1 rounded-md bg-amber-500 text-slate-950 shadow-md">
+                <Briefcase className="w-3 h-3 text-slate-950" />
+                <span>Certified Agent</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center space-x-1 text-[11px] font-bold px-2 py-1 rounded-md bg-emerald-600 text-white shadow-md">
+                <ShieldCheck className="w-3 h-3" />
+                <span>Direct Owner</span>
+              </span>
+            )}
           </div>
 
           {/* Views count */}
@@ -153,8 +163,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
               {property.furnishing?.toLowerCase().replace(/_/g, " ") ?? "-"}
             </span>
 
-            {property.owner && (
-              <span className="flex items-center space-x-1 text-emerald-700 font-medium">
+            {isAgentListing ? (
+              <span className="flex items-center space-x-1 text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                <Briefcase className="w-3 h-3 text-amber-600" />
+                <span>RERA Agent</span>
+              </span>
+            ) : (
+              <span className="flex items-center space-x-1 text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Zero Brokerage</span>
               </span>
@@ -174,10 +189,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <button
           type="button"
           onClick={handleContactClick}
-          className="flex-1 inline-flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-sm transition-all"
+          className={`flex-1 inline-flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl text-white text-xs font-semibold shadow-sm transition-all ${
+            isAgentListing
+              ? "bg-amber-600 hover:bg-amber-700"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          <span>Contact Owner</span>
+          <span>{isAgentListing ? "Contact Agent" : "Contact Owner"}</span>
         </button>
       </div>
     </div>

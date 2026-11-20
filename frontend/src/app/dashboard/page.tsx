@@ -7,6 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { Property, Lead } from "../../types";
 import { formatIndianCurrency, formatDate } from "../../lib/utils";
+import { AgentBrandHeader } from "../../components/dashboard/AgentBrandHeader";
+import { OwnerAvailabilityWidget } from "../../components/dashboard/OwnerAvailabilityWidget";
 import {
   Building2,
   Inbox,
@@ -113,23 +115,44 @@ export default function DashboardPage() {
     );
   }
 
+  const totalPortfolioValue = myProperties.reduce(
+    (acc, curr) => acc + (curr.price || 0),
+    0
+  );
+  const newLeadsCount = receivedLeads.filter((l) => l.status === "NEW").length;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Header Banner */}
-      <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-            {isBuyer ? "Buyer Portal" : user?.role === "AGENT" ? "Agent Portal" : "Owner Portal"}
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1">
-            Welcome, {user?.name}
-          </h1>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Role: <span className="font-semibold text-gray-800">{user?.role}</span> • Email: {user?.email}
-          </p>
-        </div>
+      {/* Header Banner - Role-Isolated Experience */}
+      {user?.role === "AGENT" ? (
+        <AgentBrandHeader
+          user={user}
+          propertiesCount={myProperties.length}
+          totalPortfolioValue={totalPortfolioValue}
+          totalLeadsCount={receivedLeads.length}
+          newLeadsCount={newLeadsCount}
+        />
+      ) : user?.role === "OWNER" ? (
+        <OwnerAvailabilityWidget
+          user={user}
+          propertiesCount={myProperties.length}
+          leadsCount={receivedLeads.length}
+        />
+      ) : (
+        /* Buyer Header */
+        <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+              Buyer Portal
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1">
+              Welcome, {user?.name}
+            </h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Verified Buyer Account • {user?.email}
+            </p>
+          </div>
 
-        {isBuyer ? (
           <Link
             href="/properties"
             className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md shrink-0 transition-all"
@@ -137,16 +160,8 @@ export default function DashboardPage() {
             <Search className="w-4 h-4" />
             <span>Browse Properties</span>
           </Link>
-        ) : (
-          <Link
-            href="/properties/new"
-            className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md shrink-0 transition-all"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Post New Property</span>
-          </Link>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 space-x-6 text-sm font-bold">
