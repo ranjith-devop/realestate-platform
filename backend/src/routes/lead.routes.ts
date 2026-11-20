@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { LeadController } from "../controllers/lead.controller";
-import { authenticate, optionalAuthenticate } from "../middlewares/auth.middleware";
+import { authenticate } from "../middlewares/auth.middleware";
 import { leadRateLimiter } from "../middlewares/rateLimiter.middleware";
 import { validateBody } from "../middlewares/validation.middleware";
 import { createLeadSchema, updateLeadStatusSchema } from "../validators/lead.validator";
@@ -11,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   leadRateLimiter,
-  optionalAuthenticate,
+  authenticate,
   validateBody(createLeadSchema),
   LeadController.createLead
 );

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../context/AuthContext";
 import { Property } from "../../types";
 import {
   formatIndianCurrency,
@@ -32,6 +33,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onContactClick,
 }) => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const isRent = property.listingType === "RENT";
   const coverImage = getPropertyCoverImage(property.images, property.propertyType);
   const fallback = getPropertyFallbackImages(property.propertyType)[0];
@@ -41,6 +43,12 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   const imgSrc = imgError ? fallback : coverImage;
 
   const handleContactClick = () => {
+    // Guest protection: prompt login before contacting
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/properties/${property.id}#contact`);
+      return;
+    }
+
     if (onContactClick) {
       onContactClick(property);
     } else {

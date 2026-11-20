@@ -15,7 +15,7 @@ const CITIES = ["Bangalore", "Mumbai", "Delhi-NCR", "Hyderabad", "Pune"];
 
 export default function NewPropertyPage() {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -153,6 +153,34 @@ export default function NewPropertyPage() {
         <Link href="/login?redirect=/properties/new" className="inline-block w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700">
           Sign In to Continue
         </Link>
+      </div>
+    );
+  }
+
+  // Role Isolation: Prevent Buyer role from posting listings
+  if (!loading && user?.role === "BUYER") {
+    return (
+      <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-gray-200 shadow-sm text-center space-y-4">
+        <Building2 className="w-12 h-12 text-blue-600 mx-auto" />
+        <h2 className="text-xl font-extrabold text-gray-900">Owner Account Required</h2>
+        <p className="text-xs text-gray-500 leading-relaxed">
+          You are currently signed in with a <strong>Buyer Account</strong> (<span className="text-gray-700 font-semibold">{user.email}</span>).
+          Posting property listings is reserved for verified Property Owners and Real Estate Agents.
+        </p>
+        <div className="space-y-2 pt-2">
+          <Link
+            href="/properties"
+            className="inline-block w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 shadow-md"
+          >
+            Explore Properties to Buy or Rent
+          </Link>
+          <Link
+            href="/register?role=OWNER"
+            className="inline-block w-full py-2.5 px-4 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs hover:bg-gray-50"
+          >
+            Register as an Owner
+          </Link>
+        </div>
       </div>
     );
   }

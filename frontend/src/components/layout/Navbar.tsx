@@ -61,14 +61,6 @@ function DesktopNavLinks() {
           {link.label}
         </Link>
       ))}
-      <a
-        href="http://localhost:5000/api-docs"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
-      >
-        API Docs
-      </a>
     </nav>
   );
 }
@@ -94,14 +86,6 @@ function NavLinksFallback() {
       >
         Commercial
       </Link>
-      <a
-        href="http://localhost:5000/api-docs"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
-      >
-        API Docs
-      </a>
     </nav>
   );
 }
@@ -215,16 +199,19 @@ export const Navbar: React.FC = () => {
 
           {/* Right Action buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/properties/new"
-              className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow-sm transition-all"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Post Property</span>
-              <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
-                Free
-              </span>
-            </Link>
+            {/* Post Property: Only visible to OWNER, AGENT, or GUESTS */}
+            {user?.role !== "BUYER" && (
+              <Link
+                href="/properties/new"
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow-sm transition-all"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Post Property</span>
+                <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                  Free
+                </span>
+              </Link>
+            )}
 
             {isAuthenticated ? (
               <div className="relative" ref={userDropdownRef}>
@@ -261,7 +248,13 @@ export const Navbar: React.FC = () => {
                       className="flex items-center space-x-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                     >
                       <LayoutDashboard className="w-4 h-4 text-gray-400" />
-                      <span>Owner Dashboard</span>
+                      <span>
+                        {user?.role === "BUYER"
+                          ? "Buyer Dashboard"
+                          : user?.role === "AGENT"
+                          ? "Agent Dashboard"
+                          : "Owner Dashboard"}
+                      </span>
                     </Link>
 
                     <button
@@ -356,13 +349,15 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          <Link
-            href="/properties/new"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-base font-semibold text-emerald-600 hover:bg-emerald-50"
-          >
-            + Post Property (Free)
-          </Link>
+          {user?.role !== "BUYER" && (
+            <Link
+              href="/properties/new"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-base font-semibold text-emerald-600 hover:bg-emerald-50"
+            >
+              + Post Property (Free)
+            </Link>
+          )}
 
           {isAuthenticated ? (
             <div className="border-t border-gray-100 pt-3 space-y-2">

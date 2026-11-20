@@ -217,28 +217,59 @@ export const LeadInquiryForm: React.FC<LeadInquiryFormProps> = ({
         <div className="py-8 flex items-center justify-center">
           <Clock className="w-5 h-5 text-gray-400 animate-spin" />
         </div>
+      ) : !isAuthenticated ? (
+        /* Guest Mode: Require login/signup to contact owner */
+        <div className="py-6 px-4 bg-gradient-to-b from-blue-50/60 to-white rounded-2xl border border-blue-100 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white mx-auto flex items-center justify-center shadow-md">
+            <Lock className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-extrabold text-gray-900 text-base">
+              Sign In to Contact Owner
+            </h4>
+            <p className="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">
+              Please sign in or create a free account to view verified owner contact details and send direct zero-brokerage inquiries.
+            </p>
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <Link
+              href={`/login?redirect=/properties/${property.id}`}
+              className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center space-x-2"
+            >
+              <span>Sign In to Continue</span>
+            </Link>
+            <Link
+              href={`/register?redirect=/properties/${property.id}&role=BUYER`}
+              className="w-full py-2.5 px-4 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center space-x-2"
+            >
+              <span>Create Free Account</span>
+            </Link>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100 flex items-center justify-center gap-3 text-[11px] text-gray-400">
+            <span>• 100% Free Contact</span>
+            <span>• Direct Owner Phone</span>
+          </div>
+        </div>
+      ) : user && property.ownerId === user.id ? (
+        /* Owner viewing their own property */
+        <div className="py-6 px-4 bg-gray-50 rounded-2xl border border-gray-200 text-center space-y-3">
+          <p className="text-xs font-bold text-gray-800">You are the owner of this listing</p>
+          <p className="text-xs text-gray-500">View inquiries or make updates to your listing.</p>
+          <Link
+            href={`/properties/${property.id}/edit`}
+            className="inline-block py-2.5 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700"
+          >
+            Edit This Listing
+          </Link>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           {errorMessage && (
             <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
-            </div>
-          )}
-
-          {/* Auth prompt if not signed in */}
-          {!isAuthenticated && (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start space-x-2 mb-2">
-              <Lock className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>
-                <Link
-                  href={`/login?redirect=/properties/${property.id}`}
-                  className="font-bold underline underline-offset-2"
-                >
-                  Sign in
-                </Link>{" "}
-                for faster contact. You can also fill in the form below.
-              </span>
             </div>
           )}
 

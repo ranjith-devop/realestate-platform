@@ -18,10 +18,12 @@ import {
   Phone,
   Clock,
   CheckCircle2,
+  Search,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const isBuyer = user?.role === "BUYER";
   const [activeTab, setActiveTab] = useState<"listings" | "received_leads" | "sent_leads">("listings");
 
   const [myProperties, setMyProperties] = useState<Property[]>([]);
@@ -29,24 +31,33 @@ export default function DashboardPage() {
   const [sentLeads, setSentLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Set default tab based on user role
+  useEffect(() => {
+    if (user?.role === "BUYER") {
+      setActiveTab("sent_leads");
+    } else {
+      setActiveTab("listings");
+    }
+  }, [user]);
+
   useEffect(() => {
     async function loadData() {
       if (!isAuthenticated) return;
       try {
         setLoading(true);
-        const [propsRes, recLeadsRes, sentLeadsRes] = await Promise.allSettled([
-          api.getMyListings(),
-          api.getReceivedLeads(),
-          api.getSentLeads(),
-        ]);
-        if (propsRes.status === "fulfilled") {
-          setMyProperties(propsRes.value.data || []);
-        }
-        if (recLeadsRes.status === "fulfilled") {
-          setReceivedLeads(recLeadsRes.value.data || []);
-        }
-        if (sentLeadsRes.status === "fulfilled") {
-          setSentLeads(sentLeadsRes.value.data || []);
+        // Buyers only query sent leads; Owners/Agents query listings & received leads
+        if (user?.role === "BUYER") {
+          const sentRes = await api.getSentLeads();
+          setSentLeads(sentRes.data || []);
+        } else {
+          const [propsRes, recLeadsRes, sentLeadsRes] = await Promise.allSettled([
+            api.getMyListings(),
+            api.getReceivedLeads(),
+            api.getSentLeads(),
+          ]);
+          if (propsRes.status === "fulfilled") setMyProperties(propsRes.value.data || []);
+          if (recLeadsRes.status === "fulfilled") setReceivedLeads(recLeadsRes.value.data || []);
+          if (sentLeadsRes.status === "fulfilled") setSentLeads(sentLeadsRes.value.data || []);
         }
       } catch (err) {
         console.error("Dashboard data load error:", err);
@@ -58,14 +69,14 @@ export default function DashboardPage() {
     if (!authLoading && isAuthenticated) {
       loadData();
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, user]);
 
   const handleDeleteProperty = async (id: string) => {
     if (!window.confirm("Are you sure you want to permanently delete this listing?")) return;
     try {
       await api.deleteProperty(id);
       setMyProperties((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
+    } catch {
       alert("Failed to delete property listing");
     }
   };
@@ -76,12 +87,12 @@ export default function DashboardPage() {
       setReceivedLeads((prev) =>
         prev.map((l) => (l.id === leadId ? { ...l, status } : l))
       );
-    } catch (err) {
+    } catch {
       alert("Failed to update status");
     }
   };
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return <div className="max-w-7xl mx-auto p-12 text-center text-sm">Loading dashboard...</div>;
   }
 
@@ -107,7 +118,7 @@ export default function DashboardPage() {
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-            Account Management
+            {isBuyer ? "Buyer Portal" : user?.role === "AGENT" ? "Agent Portal" : "Owner Portal"}
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1">
             Welcome, {user?.name}
@@ -117,40 +128,54 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Link
-          href="/properties/new"
-          className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md shrink-0 transition-all"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Post New Property</span>
-        </Link>
+        {isBuyer ? (
+          <Link
+            href="/properties"
+            className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md shrink-0 transition-all"
+          >
+            <Search className="w-4 h-4" />
+            <span>Browse Properties</span>
+          </Link>
+        ) : (
+          <Link
+            href="/properties/new"
+            className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md shrink-0 transition-all"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Post New Property</span>
+          </Link>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 space-x-6 text-sm font-bold">
-        <button
-          onClick={() => setActiveTab("listings")}
-          className={`pb-3 border-b-2 flex items-center space-x-2 transition-all ${
-            activeTab === "listings"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-800"
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span>My Listings ({myProperties.length})</span>
-        </button>
+        {!isBuyer && (
+          <>
+            <button
+              onClick={() => setActiveTab("listings")}
+              className={`pb-3 border-b-2 flex items-center space-x-2 transition-all ${
+                activeTab === "listings"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>My Listings ({myProperties.length})</span>
+            </button>
 
-        <button
-          onClick={() => setActiveTab("received_leads")}
-          className={`pb-3 border-b-2 flex items-center space-x-2 transition-all ${
-            activeTab === "received_leads"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-800"
-          }`}
-        >
-          <Inbox className="w-4 h-4" />
-          <span>Received Inquiries ({receivedLeads.length})</span>
-        </button>
+            <button
+              onClick={() => setActiveTab("received_leads")}
+              className={`pb-3 border-b-2 flex items-center space-x-2 transition-all ${
+                activeTab === "received_leads"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <Inbox className="w-4 h-4" />
+              <span>Received Inquiries ({receivedLeads.length})</span>
+            </button>
+          </>
+        )}
 
         <button
           onClick={() => setActiveTab("sent_leads")}
@@ -165,8 +190,8 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Tab 1: My Listings */}
-      {activeTab === "listings" && (
+      {/* Tab 1: My Listings (Only for Owner / Agent) */}
+      {!isBuyer && activeTab === "listings" && (
         <div className="space-y-4">
           {myProperties.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center space-y-4">
@@ -247,8 +272,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Tab 2: Received Inquiries */}
-      {activeTab === "received_leads" && (
+      {/* Tab 2: Received Inquiries (Only for Owner / Agent) */}
+      {!isBuyer && activeTab === "received_leads" && (
         <div className="space-y-4">
           {receivedLeads.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-xs text-gray-500">
@@ -261,53 +286,66 @@ export default function DashboardPage() {
                   key={lead.id}
                   className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
-                  <div className="space-y-1 max-w-xl">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-gray-900 text-sm">{lead.name}</span>
-                      <span className="text-xs text-gray-400">•</span>
-                      <span className="text-xs text-gray-500 flex items-center space-x-1">
-                        <Clock className="w-3 h-3 text-gray-400" />
-                        <span>{formatDate(lead.createdAt)}</span>
+                      <span className="font-extrabold text-sm text-gray-900">{lead.name}</span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          lead.status === "NEW"
+                            ? "bg-blue-100 text-blue-800"
+                            : lead.status === "CONTACTED"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-emerald-100 text-emerald-800"
+                        }`}
+                      >
+                        {lead.status}
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 text-xs text-gray-600 pt-1">
-                      <a href={`tel:${lead.phone}`} className="flex items-center space-x-1 hover:text-blue-600 font-semibold">
-                        <Phone className="w-3.5 h-3.5 text-blue-600" />
-                        <span>{lead.phone}</span>
-                      </a>
-                      <a href={`mailto:${lead.email}`} className="flex items-center space-x-1 hover:text-blue-600">
-                        <Mail className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{lead.email}</span>
-                      </a>
-                    </div>
+                    <p className="text-xs text-gray-600 font-medium">
+                      Property:{" "}
+                      <Link
+                        href={`/properties/${lead.propertyId}`}
+                        className="text-blue-600 hover:underline font-bold"
+                      >
+                        {lead.property?.title || "View Property"}
+                      </Link>
+                    </p>
 
-                    <p className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-xl border border-gray-100 mt-2">
+                    <p className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-xl border border-gray-100 italic">
                       &quot;{lead.message}&quot;
                     </p>
 
-                    {lead.property && (
-                      <p className="text-[11px] text-gray-500 mt-1">
-                        Inquired for: <Link href={`/properties/${lead.property.id}`} className="text-blue-600 hover:underline font-semibold">{lead.property.title}</Link> ({lead.property.locality})
-                      </p>
-                    )}
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pt-1">
+                      <span className="flex items-center space-x-1">
+                        <Mail className="w-3.5 h-3.5 text-gray-400" />
+                        <a href={`mailto:${lead.email}`} className="hover:underline">{lead.email}</a>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <Phone className="w-3.5 h-3.5 text-gray-400" />
+                        <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <span>{formatDate(lead.createdAt)}</span>
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-2 shrink-0">
                     <select
                       value={lead.status}
-                      onChange={(e) => handleUpdateLeadStatus(lead.id, e.target.value as any)}
-                      className={`text-xs font-bold px-3 py-2 rounded-xl border outline-none ${
-                        lead.status === "NEW"
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : lead.status === "CONTACTED"
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      }`}
+                      onChange={(e) =>
+                        handleUpdateLeadStatus(
+                          lead.id,
+                          e.target.value as "NEW" | "CONTACTED" | "CLOSED"
+                        )
+                      }
+                      className="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 outline-none cursor-pointer"
                     >
-                      <option value="NEW">Status: NEW</option>
-                      <option value="CONTACTED">Status: CONTACTED</option>
-                      <option value="CLOSED">Status: CLOSED</option>
+                      <option value="NEW">Mark NEW</option>
+                      <option value="CONTACTED">Mark CONTACTED</option>
+                      <option value="CLOSED">Mark CLOSED</option>
                     </select>
                   </div>
                 </div>
@@ -317,38 +355,96 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Tab 3: Sent Inquiries */}
+      {/* Tab 3: My Inquiries Sent (Available to Buyers, Owners, Agents) */}
       {activeTab === "sent_leads" && (
         <div className="space-y-4">
           {sentLeads.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-xs text-gray-500">
-              You haven&apos;t sent any inquiries yet.
+            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center space-y-4">
+              <Mail className="w-12 h-12 text-gray-300 mx-auto" />
+              <h3 className="text-base font-bold text-gray-800">No inquiries sent yet</h3>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                Explore residential and commercial properties with zero brokerage and contact owners directly.
+              </p>
+              <Link
+                href="/properties"
+                className="inline-block px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md"
+              >
+                Browse Properties
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">
               {sentLeads.map((lead) => (
                 <div
                   key={lead.id}
-                  className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3"
                 >
-                  <div className="space-y-1">
-                    <span className="text-[11px] font-bold uppercase text-gray-400">
-                      Sent on {formatDate(lead.createdAt)}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+                        Inquiry to Property Owner
+                      </span>
+                      <h4 className="font-extrabold text-gray-900 text-sm mt-0.5">
+                        <Link
+                          href={`/properties/${lead.propertyId}`}
+                          className="hover:text-blue-600 hover:underline transition-colors"
+                        >
+                          {lead.property?.title || "Property Listing"}
+                        </Link>
+                      </h4>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full self-start sm:self-auto ${
+                        lead.status === "NEW"
+                          ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          : lead.status === "CONTACTED"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      Status: {lead.status}
                     </span>
-                    <h4 className="text-sm font-bold text-gray-900">
-                      {lead.property?.title || "Property Inquiry"}
-                    </h4>
-                    <p className="text-xs text-gray-600 italic">
-                      &quot;{lead.message}&quot;
-                    </p>
                   </div>
 
-                  <div className="text-xs">
-                    <span className="font-semibold text-gray-500">Owner Contact Status: </span>
-                    <span className="font-bold text-blue-600">{lead.status}</span>
+                  <p className="text-xs text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 italic">
+                    &quot;{lead.message}&quot;
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
+                    <span className="flex items-center space-x-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Sent on {formatDate(lead.createdAt)}</span>
+                    </span>
+
+                    <Link
+                      href={`/properties/${lead.propertyId}`}
+                      className="font-bold text-blue-600 hover:underline flex items-center space-x-1"
+                    >
+                      <span>View Property Details</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Banner for Buyers interested in listing */}
+          {isBuyer && (
+            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 className="font-bold text-gray-900 text-sm">Want to sell or rent out your own property?</h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Register as a Property Owner to post verified listings free with zero brokerage.
+                </p>
+              </div>
+              <Link
+                href="/register?role=OWNER"
+                className="px-4 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm shrink-0"
+              >
+                Register as Owner
+              </Link>
             </div>
           )}
         </div>
