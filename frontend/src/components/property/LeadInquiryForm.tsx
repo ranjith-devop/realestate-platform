@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Property } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
@@ -168,22 +169,35 @@ export const LeadInquiryForm: React.FC<LeadInquiryFormProps> = ({
             Contact Property Owner
           </h3>
         </div>
-        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-          <UserCheck className="w-5 h-5" />
+        <div className="relative w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-base overflow-hidden shrink-0 border border-blue-200 shadow-xs">
+          {property.owner?.avatar ? (
+            <Image src={property.owner.avatar} alt={property.owner.name || "Owner"} fill sizes="48px" className="object-cover" />
+          ) : (
+            <span>{property.owner?.name?.charAt(0)?.toUpperCase() ?? "O"}</span>
+          )}
         </div>
       </div>
 
       {/* Owner Info Badge */}
-      <div className="bg-gray-50 rounded-xl p-3 my-4 flex items-center justify-between text-xs">
-        <div>
-          <p className="font-bold text-gray-800">
-            {property.owner?.name || "Verified Property Owner"}
-          </p>
-          <p className="text-gray-500 capitalize">
-            Role: {property.owner?.role?.toLowerCase() ?? "owner"}
-          </p>
+      <div className="bg-gradient-to-r from-gray-50 to-blue-50/40 rounded-2xl p-3.5 my-4 flex items-center justify-between text-xs border border-gray-100 shadow-xs">
+        <div className="flex items-center space-x-3">
+          <div className="relative w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-blue-200 shadow-xs">
+            {property.owner?.avatar ? (
+              <Image src={property.owner.avatar} alt={property.owner.name || "Owner"} fill sizes="44px" className="object-cover" />
+            ) : (
+              <span>{property.owner?.name?.charAt(0)?.toUpperCase() ?? "O"}</span>
+            )}
+          </div>
+          <div>
+            <p className="font-extrabold text-gray-900 text-sm">
+              {property.owner?.name || "Verified Property Owner"}
+            </p>
+            <p className="text-gray-500 capitalize text-[11px] font-medium">
+              Verified {property.owner?.role?.toLowerCase() ?? "owner"}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center space-x-1 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
+        <div className="flex items-center space-x-1 text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 text-[11px]">
           <Phone className="w-3 h-3" />
           <span>Phone Verified</span>
         </div>

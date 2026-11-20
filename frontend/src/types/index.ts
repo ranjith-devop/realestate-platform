@@ -120,6 +120,13 @@ export interface Lead {
   id: string;
   propertyId: string;
   buyerId?: string | null;
+  buyer?: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+    avatar?: string | null;
+  };
   name: string;
   email: string;
   phone: string;

@@ -85,6 +85,15 @@ export class LeadService {
       },
       orderBy: { createdAt: "desc" },
       include: {
+        buyer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
         property: {
           select: {
             id: true,

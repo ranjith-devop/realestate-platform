@@ -119,6 +119,7 @@ export class PropertyService {
           id: true,
           name: true,
           role: true,
+          avatar: true,
         },
       },
     };

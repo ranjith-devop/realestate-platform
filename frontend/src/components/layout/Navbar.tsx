@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -218,10 +219,14 @@ export const Navbar: React.FC = () => {
               <div className="relative" ref={userDropdownRef}>
                 <button
                   onClick={() => setUserDropdownOpen((prev) => !prev)}
-                  className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-full border border-gray-200 hover:border-blue-300 transition-colors"
+                  className="flex items-center space-x-2.5 p-1 pr-3 rounded-full border border-gray-200 hover:border-blue-300 transition-colors bg-white shadow-xs"
                 >
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
-                    {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
+                  <div className="relative w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-blue-200">
+                    {user?.avatar ? (
+                      <Image src={user.avatar} alt={user?.name || "User"} fill sizes="32px" className="object-cover" />
+                    ) : (
+                      <span>{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</span>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-gray-800 max-w-[120px] truncate">
                     {user?.name}
@@ -230,17 +235,26 @@ export const Navbar: React.FC = () => {
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-xl border border-gray-100 py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-bold text-gray-900 truncate">
-                        {user?.name}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {user?.email}
-                      </p>
-                      <span className="inline-block mt-1 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">
-                        {user?.role}
-                      </span>
+                  <div className="absolute right-0 mt-2 w-60 rounded-xl bg-white shadow-xl border border-gray-100 py-2 z-50">
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center space-x-3">
+                      <div className="relative w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-blue-200">
+                        {user?.avatar ? (
+                          <Image src={user.avatar} alt={user?.name || "User"} fill sizes="40px" className="object-cover" />
+                        ) : (
+                          <span>{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate">
+                          {user?.name}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {user?.email}
+                        </p>
+                        <span className="inline-block mt-0.5 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">
+                          {user?.role}
+                        </span>
+                      </div>
                     </div>
 
                     <Link
@@ -371,6 +385,19 @@ export const Navbar: React.FC = () => {
 
           {isAuthenticated ? (
             <div className="border-t border-gray-100 pt-3 space-y-2">
+              <div className="flex items-center space-x-3 px-3 py-2 mb-2 bg-gray-50 rounded-xl">
+                <div className="relative w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-blue-200">
+                  {user?.avatar ? (
+                    <Image src={user.avatar} alt={user?.name || "User"} fill sizes="40px" className="object-cover" />
+                  ) : (
+                    <span>{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900 truncate">{user?.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                </div>
+              </div>
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}

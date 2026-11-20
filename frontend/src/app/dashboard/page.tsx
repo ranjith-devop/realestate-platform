@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { Property, Lead } from "../../types";
@@ -284,23 +285,32 @@ export default function DashboardPage() {
               {receivedLeads.map((lead) => (
                 <div
                   key={lead.id}
-                  className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col md:flex-row md:items-start justify-between gap-4"
                 >
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-extrabold text-sm text-gray-900">{lead.name}</span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          lead.status === "NEW"
-                            ? "bg-blue-100 text-blue-800"
-                            : lead.status === "CONTACTED"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-emerald-100 text-emerald-800"
-                        }`}
-                      >
-                        {lead.status}
-                      </span>
+                  <div className="flex items-start space-x-3.5 flex-1 min-w-0">
+                    <div className="relative w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-blue-200 shadow-xs">
+                      {lead.buyer?.avatar ? (
+                        <Image src={lead.buyer.avatar} alt={lead.name} fill sizes="40px" className="object-cover" />
+                      ) : (
+                        <span>{lead.name.charAt(0).toUpperCase()}</span>
+                      )}
                     </div>
+
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-extrabold text-sm text-gray-900">{lead.name}</span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            lead.status === "NEW"
+                              ? "bg-blue-100 text-blue-800"
+                              : lead.status === "CONTACTED"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-emerald-100 text-emerald-800"
+                          }`}
+                        >
+                          {lead.status}
+                        </span>
+                      </div>
 
                     <p className="text-xs text-gray-600 font-medium">
                       Property:{" "}
@@ -331,8 +341,9 @@ export default function DashboardPage() {
                       </span>
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center space-x-2 shrink-0">
+                <div className="flex items-center space-x-2 shrink-0">
                     <select
                       value={lead.status}
                       onChange={(e) =>
@@ -379,19 +390,28 @@ export default function DashboardPage() {
                   key={lead.id}
                   className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                        Inquiry to Property Owner
-                      </span>
-                      <h4 className="font-extrabold text-gray-900 text-sm mt-0.5">
-                        <Link
-                          href={`/properties/${lead.propertyId}`}
-                          className="hover:text-blue-600 hover:underline transition-colors"
-                        >
-                          {lead.property?.title || "Property Listing"}
-                        </Link>
-                      </h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 border border-blue-200 shadow-xs">
+                        {user?.avatar ? (
+                          <Image src={user.avatar} alt={user.name} fill sizes="36px" className="object-cover" />
+                        ) : (
+                          <span>{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+                          Inquiry to Property Owner
+                        </span>
+                        <h4 className="font-extrabold text-gray-900 text-sm mt-0.5">
+                          <Link
+                            href={`/properties/${lead.propertyId}`}
+                            className="hover:text-blue-600 hover:underline transition-colors"
+                          >
+                            {lead.property?.title || "Property Listing"}
+                          </Link>
+                        </h4>
+                      </div>
                     </div>
 
                     <span
