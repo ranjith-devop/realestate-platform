@@ -9,6 +9,7 @@ import {
   PlusCircle,
   LogOut,
   LayoutDashboard,
+  UserCircle,
   Menu,
   X,
   MapPin,
@@ -257,6 +258,15 @@ export const Navbar: React.FC = () => {
                       </span>
                     </Link>
 
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center space-x-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                    >
+                      <UserCircle className="w-4 h-4 text-gray-400" />
+                      <span>My Profile</span>
+                    </Link>
+
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
@@ -368,6 +378,14 @@ export const Navbar: React.FC = () => {
               >
                 <LayoutDashboard className="w-5 h-5 text-gray-400" />
                 <span>My Dashboard</span>
+              </Link>
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium text-gray-800 hover:bg-gray-50"
+              >
+                <UserCircle className="w-5 h-5 text-gray-400" />
+                <span>My Profile</span>
               </Link>
               <button
                 onClick={handleLogout}

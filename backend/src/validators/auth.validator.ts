@@ -23,6 +23,20 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, "Refresh token is required"),
 });
 
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100).optional(),
+  phone: z
+    .string()
+    .regex(/^[0-9+ -]{10,15}$/, "Invalid phone number format")
+    .optional()
+    .nullable(),
+  avatar: z.string().url("Invalid avatar URL").optional().nullable().or(z.literal("")),
+  bio: z.string().max(500, "Bio cannot exceed 500 characters").optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  profileData: z.record(z.any()).optional().nullable(),
+});
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
 export type RefreshTokenDto = z.infer<typeof refreshTokenSchema>;
+export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;

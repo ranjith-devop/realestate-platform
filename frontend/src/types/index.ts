@@ -15,6 +15,43 @@ export type PropertyStatus = "AVAILABLE" | "UNDER_OFFER" | "SOLD" | "RENTED";
 
 export type LeadStatus = "NEW" | "CONTACTED" | "CLOSED";
 
+export interface BuyerPreferences {
+  preferredCities?: string[];
+  propertyTypes?: PropertyType[];
+  minBudget?: number;
+  maxBudget?: number;
+  purpose?: "BUY" | "RENT";
+  possessionStatus?: "READY" | "UNDER_CONSTRUCTION" | "ANY";
+}
+
+export interface OwnerDetails {
+  address?: string;
+  state?: string;
+  pincode?: string;
+  idType?: string;
+  idNumber?: string;
+  preferredContactTime?: string;
+  whatsappNumber?: string;
+}
+
+export interface AgentDetails {
+  agencyName?: string;
+  licenseNumber?: string;
+  experienceYears?: number;
+  operatingCities?: string[];
+  operatingTypes?: PropertyType[];
+  website?: string;
+  whatsappNumber?: string;
+  officeAddress?: string;
+}
+
+export interface ProfileData {
+  buyerPreferences?: BuyerPreferences;
+  ownerDetails?: OwnerDetails;
+  agentDetails?: AgentDetails;
+  [key: string]: unknown;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -22,7 +59,14 @@ export interface User {
   phone?: string | null;
   role: Role;
   avatar?: string | null;
+  bio?: string | null;
+  city?: string | null;
+  profileData?: ProfileData | null;
   createdAt: string;
+  _count?: {
+    properties?: number;
+    leadsSent?: number;
+  };
 }
 
 export interface PropertyImage {

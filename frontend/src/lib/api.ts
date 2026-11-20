@@ -179,6 +179,20 @@ class ApiClient {
     return this.request<User>("/auth/me");
   }
 
+  async updateProfile(profileData: {
+    name?: string;
+    phone?: string | null;
+    avatar?: string | null;
+    bio?: string | null;
+    city?: string | null;
+    profileData?: Record<string, unknown> | null;
+  }) {
+    return this.request<User>("/auth/me", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    });
+  }
+
   // --- Property APIs ---
   async searchProperties(
     filters: Partial<FilterState>,

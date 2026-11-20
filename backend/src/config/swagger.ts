@@ -198,6 +198,33 @@ export const swaggerSpec = {
           401: { description: "Unauthorized" },
         },
       },
+      put: {
+        tags: ["Authentication"],
+        summary: "Update user profile details and role-specific preferences",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  phone: { type: "string" },
+                  avatar: { type: "string" },
+                  bio: { type: "string" },
+                  city: { type: "string" },
+                  profileData: { type: "object" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Profile updated successfully" },
+          401: { description: "Unauthorized" },
+        },
+      },
     },
     "/api/properties/meta/city-stats": {
       get: {

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/auth.controller";
 import { validateBody } from "../middlewares/validation.middleware";
-import { registerSchema, loginSchema, refreshTokenSchema } from "../validators/auth.validator";
+import { registerSchema, loginSchema, refreshTokenSchema, updateProfileSchema } from "../validators/auth.validator";
 import { authenticate } from "../middlewares/auth.middleware";
 import { authRateLimiter } from "../middlewares/rateLimiter.middleware";
 
@@ -12,5 +12,7 @@ router.post("/login", authRateLimiter, validateBody(loginSchema), AuthController
 router.post("/refresh", validateBody(refreshTokenSchema), AuthController.refreshTokens);
 router.post("/logout", AuthController.logout);
 router.get("/me", authenticate, AuthController.getProfile);
+router.put("/me", authenticate, validateBody(updateProfileSchema), AuthController.updateProfile);
+router.put("/profile", authenticate, validateBody(updateProfileSchema), AuthController.updateProfile);
 
 export default router;

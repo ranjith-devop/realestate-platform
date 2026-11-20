@@ -16,6 +16,8 @@ interface AuthContextType {
     role: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (updatedUser: User) => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
   isOwnerOrAgent: boolean;
 }
@@ -80,6 +82,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  const updateUser = useCallback((updatedUser: User) => {
+    setUser(updatedUser);
+    try {
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await api.getMe();
+      if (res.data) {
+        updateUser(res.data);
+      }
+    } catch {
+      // Ignore refresh error
+    }
+  }, [updateUser]);
+
   const value = useMemo(
     () => ({
       user,
@@ -87,11 +109,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       login,
       register,
       logout,
+      updateUser,
+      refreshUser,
       isAuthenticated: !!user,
       isOwnerOrAgent:
         user?.role === "OWNER" || user?.role === "AGENT" || user?.role === "ADMIN",
     }),
-    [user, loading, login, register, logout]
+    [user, loading, login, register, logout, updateUser, refreshUser]
   );
 
   return (

@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../config/prisma";
 import { JwtUtils } from "../utils/jwt.utils";
-import { RegisterDto, LoginDto } from "../validators/auth.validator";
-import { Role } from "@prisma/client";
+import { RegisterDto, LoginDto, UpdateProfileDto } from "../validators/auth.validator";
+import { Role, Prisma } from "@prisma/client";
 
 export class AuthService {
   static async register(dto: RegisterDto) {
@@ -166,9 +166,12 @@ export class AuthService {
         phone: true,
         role: true,
         avatar: true,
+        bio: true,
+        city: true,
+        profileData: true,
         createdAt: true,
         _count: {
-          select: { properties: true },
+          select: { properties: true, leadsSent: true },
         },
       },
     });
@@ -178,5 +181,67 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  static async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const currentProfileData = (user.profileData as Record<string, unknown>) || {};
+    let updatedProfileData = { ...currentProfileData };
+
+    if (dto.profileData) {
+      // Enforce strict role isolation on the backend
+      if (user.role === Role.BUYER) {
+        updatedProfileData = {
+          ...updatedProfileData,
+          buyerPreferences: dto.profileData.buyerPreferences || dto.profileData,
+        };
+      } else if (user.role === Role.OWNER) {
+        updatedProfileData = {
+          ...updatedProfileData,
+          ownerDetails: dto.profileData.ownerDetails || dto.profileData,
+        };
+      } else if (user.role === Role.AGENT) {
+        updatedProfileData = {
+          ...updatedProfileData,
+          agentDetails: dto.profileData.agentDetails || dto.profileData,
+        };
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+        ...(dto.phone !== undefined ? { phone: dto.phone ? dto.phone.trim() : null } : {}),
+        ...(dto.avatar !== undefined ? { avatar: dto.avatar ? dto.avatar.trim() : null } : {}),
+        ...(dto.bio !== undefined ? { bio: dto.bio ? dto.bio.trim() : null } : {}),
+        ...(dto.city !== undefined ? { city: dto.city ? dto.city.trim() : null } : {}),
+        profileData: updatedProfileData as Prisma.InputJsonValue,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        avatar: true,
+        bio: true,
+        city: true,
+        profileData: true,
+        createdAt: true,
+        _count: {
+          select: { properties: true, leadsSent: true },
+        },
+      },
+    });
+
+    return updatedUser;
   }
 }
