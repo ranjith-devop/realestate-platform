@@ -321,7 +321,7 @@ export default function EditPropertyPage() {
             {imageUrls.length === 0 && (
               <span className="inline-flex items-center space-x-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
                 <Sparkles className="w-3 h-3" />
-                <span>Auto-Fallback Active</span>
+                <span>Sample photos ready</span>
               </span>
             )}
           </div>

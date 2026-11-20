@@ -430,7 +430,7 @@ export default function NewPropertyPage() {
             {imageUrls.length === 0 && (
               <span className="inline-flex items-center space-x-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Auto-Fallback Active</span>
+                <span>Sample photos ready</span>
               </span>
             )}
           </div>

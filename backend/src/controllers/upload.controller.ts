@@ -28,7 +28,7 @@ export class UploadController {
         uploadList.map((f) => uploadService.uploadImage(f.buffer, f.originalname, "/properties"))
       );
 
-      ApiResponseHelper.created(res, results, "Images uploaded successfully to ImageKit cloud.");
+      ApiResponseHelper.created(res, results, "Images uploaded successfully.");
     } catch (error) {
       next(error);
     }
@@ -46,7 +46,7 @@ export class UploadController {
       }
 
       const result = await uploadService.uploadImage(file.buffer, file.originalname, "/documents");
-      ApiResponseHelper.created(res, result, "Document uploaded successfully to ImageKit cloud.");
+      ApiResponseHelper.created(res, result, "Document uploaded successfully.");
     } catch (error) {
       next(error);
     }
@@ -64,7 +64,7 @@ export class UploadController {
       }
 
       await uploadService.deleteFile(fileId);
-      ApiResponseHelper.success(res, null, "File deleted successfully from ImageKit.");
+      ApiResponseHelper.success(res, null, "File deleted successfully.");
     } catch (error) {
       next(error);
     }

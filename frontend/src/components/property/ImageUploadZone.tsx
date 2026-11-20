@@ -10,7 +10,7 @@ import {
   Loader2,
   AlertCircle,
   Plus,
-  Cloud,
+  Images,
 } from "lucide-react";
 
 interface ImageUploadZoneProps {
@@ -60,7 +60,7 @@ export const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to upload images to ImageKit cloud."
+          : "Failed to upload images. Please try again."
       );
     } finally {
       setUploading(false);
@@ -92,19 +92,19 @@ export const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Cloud Storage Header */}
+      {/* Photos Header */}
       <div className="flex items-center justify-between pb-2 border-b border-gray-100">
         <div>
           <h3 className="text-sm font-bold text-gray-900">
-            Property Photos &amp; Media
+            Property Photos
           </h3>
           <p className="text-xs text-gray-500">
-            Upload from device or enter image URLs. Supported: JPEG, PNG, WEBP (up to 10MB each).
+            Upload from your device or paste a photo link. Supported: JPG, PNG, WEBP (up to 10MB each).
           </p>
         </div>
-        <span className="inline-flex items-center space-x-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-          <Cloud className="w-3.5 h-3.5" />
-          <span>ImageKit Cloud</span>
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          <Images className="w-3.5 h-3.5" />
+          <span>Up to {maxFiles} photos</span>
         </span>
       </div>
 
@@ -143,10 +143,10 @@ export const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
           <div className="flex flex-col items-center justify-center space-y-2 py-2">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
             <p className="text-sm font-semibold text-blue-700">
-              Uploading directly to ImageKit Cloud...
+              Uploading your photos...
             </p>
             <p className="text-xs text-gray-500">
-              Optimizing and generating CDN thumbnails
+              Please wait a moment while we process your pictures
             </p>
           </div>
         ) : (
@@ -170,7 +170,7 @@ export const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
       <div className="flex gap-2 pt-1">
         <input
           type="url"
-          placeholder="Or paste an image URL (e.g. Unsplash or CDN URL)..."
+          placeholder="Or paste a photo link (e.g. https://example.com/photo.jpg)..."
           value={urlInput}
           onChange={(e) => setUrlInput(e.target.value)}
           onKeyDown={(e) => {
@@ -187,7 +187,7 @@ export const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
           className="inline-flex items-center space-x-1 px-4 py-2 rounded-xl bg-gray-800 text-white text-xs font-bold hover:bg-gray-900 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Add URL</span>
+          <span>Add Photo</span>
         </button>
       </div>
 
