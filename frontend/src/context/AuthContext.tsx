@@ -7,14 +7,14 @@ import { api } from "../lib/api";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<User>;
   register: (payload: {
     name: string;
     email: string;
     password: string;
     phone?: string;
     role: string;
-  }) => Promise<void>;
+  }) => Promise<User>;
   logout: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
   refreshUser: () => Promise<void>;
@@ -51,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async (credentials: { email: string; password: string }) => {
       const data = await api.login(credentials);
       setUser(data.user);
+      return data.user;
     },
     []
   );
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }) => {
       const data = await api.register(payload);
       setUser(data.user);
+      return data.user;
     },
     []
   );

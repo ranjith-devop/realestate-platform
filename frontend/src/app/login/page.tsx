@@ -82,8 +82,13 @@ function LoginFormContent() {
 
     try {
       setSubmitting(true);
-      await login({ email: email.trim(), password });
-      router.push(redirect);
+      const loggedInUser = await login({ email: email.trim(), password });
+      const requestedRedirect = searchParams.get("redirect");
+      if (loggedInUser?.role === "ADMIN" && (!requestedRedirect || requestedRedirect === "/dashboard")) {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -95,9 +100,9 @@ function LoginFormContent() {
     }
   };
 
-  const fillDemoAccount = (demoEmail: string) => {
+  const fillDemoAccount = (demoEmail: string, demoPassword = "Password@123") => {
     setEmail(demoEmail);
-    setPassword("Password@123");
+    setPassword(demoPassword);
     setFieldErrors({});
     setError(null);
   };
@@ -212,20 +217,27 @@ function LoginFormContent() {
           <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 text-center">
             Quick 1-Click Demo Logins
           </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => fillDemoAccount("owner@realestate.com")}
-              className="py-2 px-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 font-semibold text-gray-700 transition-colors"
+              className="py-2 px-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 font-semibold text-gray-700 transition-colors text-center"
             >
-              Demo Owner
+              Owner
             </button>
             <button
               type="button"
               onClick={() => fillDemoAccount("buyer@realestate.com")}
-              className="py-2 px-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 font-semibold text-gray-700 transition-colors"
+              className="py-2 px-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 font-semibold text-gray-700 transition-colors text-center"
             >
-              Demo Buyer
+              Buyer
+            </button>
+            <button
+              type="button"
+              onClick={() => fillDemoAccount("admin@realestate.com", "Admin@123")}
+              className="py-2 px-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 font-semibold text-purple-800 transition-colors text-center"
+            >
+              SuperAdmin
             </button>
           </div>
         </div>

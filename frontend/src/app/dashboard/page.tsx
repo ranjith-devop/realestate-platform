@@ -3,12 +3,16 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { Property, Lead } from "../../types";
 import { formatIndianCurrency, formatDate } from "../../lib/utils";
 import { AgentBrandHeader } from "../../components/dashboard/AgentBrandHeader";
 import { OwnerAvailabilityWidget } from "../../components/dashboard/OwnerAvailabilityWidget";
+import { SuperAdminBanner } from "../../components/dashboard/SuperAdminBanner";
+import { DashboardReceivedLeads } from "../../components/dashboard/DashboardReceivedLeads";
+import { DashboardSentLeads } from "../../components/dashboard/DashboardSentLeads";
 import {
   Building2,
   Inbox,
@@ -22,9 +26,11 @@ import {
   Clock,
   CheckCircle2,
   Search,
+  ShieldAlert,
 } from "lucide-react";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const isBuyer = user?.role === "BUYER";
   const [activeTab, setActiveTab] = useState<"listings" | "received_leads" | "sent_leads">("listings");
@@ -33,6 +39,13 @@ export default function DashboardPage() {
   const [receivedLeads, setReceivedLeads] = useState<Lead[]>([]);
   const [sentLeads, setSentLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Auto-redirect SuperAdmin directly to SuperAdmin Console
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user?.role === "ADMIN") {
+      router.replace("/admin");
+    }
+  }, [authLoading, isAuthenticated, user, router]);
 
   // Set default tab based on user role
   useEffect(() => {
@@ -46,6 +59,10 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       if (!isAuthenticated) return;
+      if (user?.role === "ADMIN") {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         // Buyers only query sent leads; Owners/Agents query listings & received leads
@@ -111,6 +128,29 @@ export default function DashboardPage() {
         >
           Sign In
         </Link>
+      </div>
+    );
+  }
+
+  // SuperAdmin: show banner and prompt redirect
+  if (user?.role === "ADMIN") {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+        <SuperAdminBanner user={user} />
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center space-y-3">
+          <p className="text-sm font-semibold text-gray-700">
+            SuperAdmin accounts manage the entire platform from the SuperAdmin Console.
+          </p>
+          <p className="text-xs text-gray-500">
+            Redirecting you to the SuperAdmin Console...
+          </p>
+          <Link
+            href="/admin"
+            className="inline-flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-colors shadow-md"
+          >
+            <span>Proceed to Console</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -290,199 +330,19 @@ export default function DashboardPage() {
 
       {/* Tab 2: Received Inquiries (Only for Owner / Agent) */}
       {!isBuyer && activeTab === "received_leads" && (
-        <div className="space-y-4">
-          {receivedLeads.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-xs text-gray-500">
-              No buyer or tenant inquiries received yet.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {receivedLeads.map((lead) => (
-                <div
-                  key={lead.id}
-                  className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col md:flex-row md:items-start justify-between gap-4"
-                >
-                  <div className="flex items-start space-x-3.5 flex-1 min-w-0">
-                    <div className="relative w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-blue-200 shadow-xs">
-                      {lead.buyer?.avatar ? (
-                        <Image src={lead.buyer.avatar} alt={lead.name} fill sizes="40px" className="object-cover" />
-                      ) : (
-                        <span>{lead.name.charAt(0).toUpperCase()}</span>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5 flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-extrabold text-sm text-gray-900">{lead.name}</span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            lead.status === "NEW"
-                              ? "bg-blue-100 text-blue-800"
-                              : lead.status === "CONTACTED"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-emerald-100 text-emerald-800"
-                          }`}
-                        >
-                          {lead.status}
-                        </span>
-                      </div>
-
-                    <p className="text-xs text-gray-600 font-medium">
-                      Property:{" "}
-                      <Link
-                        href={`/properties/${lead.propertyId}`}
-                        className="text-blue-600 hover:underline font-bold"
-                      >
-                        {lead.property?.title || "View Property"}
-                      </Link>
-                    </p>
-
-                    <p className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-xl border border-gray-100 italic">
-                      &quot;{lead.message}&quot;
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pt-1">
-                      <span className="flex items-center space-x-1">
-                        <Mail className="w-3.5 h-3.5 text-gray-400" />
-                        <a href={`mailto:${lead.email}`} className="hover:underline">{lead.email}</a>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <Phone className="w-3.5 h-3.5 text-gray-400" />
-                        <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{formatDate(lead.createdAt)}</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2 shrink-0">
-                    <select
-                      value={lead.status}
-                      onChange={(e) =>
-                        handleUpdateLeadStatus(
-                          lead.id,
-                          e.target.value as "NEW" | "CONTACTED" | "CLOSED"
-                        )
-                      }
-                      className="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 outline-none cursor-pointer"
-                    >
-                      <option value="NEW">Mark NEW</option>
-                      <option value="CONTACTED">Mark CONTACTED</option>
-                      <option value="CLOSED">Mark CLOSED</option>
-                    </select>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <DashboardReceivedLeads
+          leads={receivedLeads}
+          onUpdateStatus={handleUpdateLeadStatus}
+        />
       )}
 
       {/* Tab 3: My Inquiries Sent (Available to Buyers, Owners, Agents) */}
       {activeTab === "sent_leads" && (
-        <div className="space-y-4">
-          {sentLeads.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center space-y-4">
-              <Mail className="w-12 h-12 text-gray-300 mx-auto" />
-              <h3 className="text-base font-bold text-gray-800">No inquiries sent yet</h3>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                Explore residential and commercial properties with zero brokerage and contact owners directly.
-              </p>
-              <Link
-                href="/properties"
-                className="inline-block px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-md"
-              >
-                Browse Properties
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sentLeads.map((lead) => (
-                <div
-                  key={lead.id}
-                  className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="relative w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 border border-blue-200 shadow-xs">
-                        {user?.avatar ? (
-                          <Image src={user.avatar} alt={user.name} fill sizes="36px" className="object-cover" />
-                        ) : (
-                          <span>{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                          Inquiry to Property Owner
-                        </span>
-                        <h4 className="font-extrabold text-gray-900 text-sm mt-0.5">
-                          <Link
-                            href={`/properties/${lead.propertyId}`}
-                            className="hover:text-blue-600 hover:underline transition-colors"
-                          >
-                            {lead.property?.title || "Property Listing"}
-                          </Link>
-                        </h4>
-                      </div>
-                    </div>
-
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full self-start sm:self-auto ${
-                        lead.status === "NEW"
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
-                          : lead.status === "CONTACTED"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      Status: {lead.status}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 italic">
-                    &quot;{lead.message}&quot;
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
-                    <span className="flex items-center space-x-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>Sent on {formatDate(lead.createdAt)}</span>
-                    </span>
-
-                    <Link
-                      href={`/properties/${lead.propertyId}`}
-                      className="font-bold text-blue-600 hover:underline flex items-center space-x-1"
-                    >
-                      <span>View Property Details</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Banner for Buyers interested in listing */}
-          {isBuyer && (
-            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 className="font-bold text-gray-900 text-sm">Want to sell or rent out your own property?</h4>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Register as a Property Owner to post verified listings free with zero brokerage.
-                </p>
-              </div>
-              <Link
-                href="/register?role=OWNER"
-                className="px-4 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm shrink-0"
-              >
-                Register as Owner
-              </Link>
-            </div>
-          )}
-        </div>
+        <DashboardSentLeads
+          leads={sentLeads}
+          user={user}
+          isBuyer={isBuyer}
+        />
       )}
     </div>
   );
