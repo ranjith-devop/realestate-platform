@@ -42,8 +42,8 @@ export const Footer: React.FC = () => {
 
       {/* Main Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-2 text-white mb-4">
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
                 <Building2 className="w-5 h-5" />
@@ -51,12 +51,12 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-lg">PropNest</span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed mb-4">
-              India&apos;s fastest growing real-estate search portal inspired by 99acres and NoBroker.
+              India&apos;s verified real estate platform empowering buyers, direct owners, and certified agents.
             </p>
             <div className="text-xs text-gray-500">
               API Docs:{" "}
               <a
-                href="http://localhost:5000/api-docs"
+                href="https://realestate-platform-4.onrender.com/api-docs"
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-400 hover:underline"
@@ -69,11 +69,11 @@ export const Footer: React.FC = () => {
           <div>
             <h5 className="font-semibold text-white mb-3">Popular Cities</h5>
             <ul className="space-y-2 text-xs">
-              <li><Link href="/properties?city=Bangalore" className="hover:text-white transition-colors">Properties in Bangalore</Link></li>
-              <li><Link href="/properties?city=Mumbai" className="hover:text-white transition-colors">Properties in Mumbai</Link></li>
-              <li><Link href="/properties?city=Delhi-NCR" className="hover:text-white transition-colors">Properties in Delhi-NCR</Link></li>
-              <li><Link href="/properties?city=Hyderabad" className="hover:text-white transition-colors">Properties in Hyderabad</Link></li>
-              <li><Link href="/properties?city=Pune" className="hover:text-white transition-colors">Properties in Pune</Link></li>
+              <li><Link href="/properties?city=Bangalore" className="hover:text-white transition-colors">Bangalore</Link></li>
+              <li><Link href="/properties?city=Mumbai" className="hover:text-white transition-colors">Mumbai</Link></li>
+              <li><Link href="/properties?city=Delhi-NCR" className="hover:text-white transition-colors">Delhi-NCR</Link></li>
+              <li><Link href="/properties?city=Hyderabad" className="hover:text-white transition-colors">Hyderabad</Link></li>
+              <li><Link href="/properties?city=Pune" className="hover:text-white transition-colors">Pune</Link></li>
             </ul>
           </div>
 
@@ -92,19 +92,30 @@ export const Footer: React.FC = () => {
             <h5 className="font-semibold text-white mb-3">For Owners & Agents</h5>
             <ul className="space-y-2 text-xs">
               <li><Link href="/properties/new" className="hover:text-white transition-colors">Post Free Property Listing</Link></li>
-              <li><Link href="/dashboard" className="hover:text-white transition-colors">Owner Lead Management</Link></li>
+              <li><Link href="/dashboard" className="hover:text-white transition-colors">Lead Management</Link></li>
               <li><Link href="/register?role=AGENT" className="hover:text-white transition-colors">Agent Partner Program</Link></li>
-              <li><Link href="/register?role=OWNER" className="hover:text-white transition-colors">Owner Registration</Link></li>
+              <li><Link href="/register?role=OWNER" className="hover:text-white transition-colors">Direct Owner Signup</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-semibold text-white mb-3">Company & Legal</h5>
+            <ul className="space-y-2 text-xs">
+              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="/rera-guidelines" className="hover:text-white transition-colors">RERA Guidelines</Link></li>
+              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-900 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500">
           <p>© {new Date().getFullYear()} PropNest Real Estate Platform. All rights reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
-            <span>RERA Guidelines</span>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 md:mt-0 font-medium">
+            <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/rera-guidelines" className="hover:text-white transition-colors">RERA Guidelines</Link>
           </div>
         </div>
       </div>
