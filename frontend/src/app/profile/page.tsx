@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { PropertyType } from "../../types";
 import { BuyerPreferencesForm } from "../../components/profile/BuyerPreferencesForm";
 import { OwnerDetailsForm } from "../../components/profile/OwnerDetailsForm";
 import { AgentDetailsForm } from "../../components/profile/AgentDetailsForm";
+import { ProfilePhotoSection } from "../../components/profile/ProfilePhotoSection";
 import {
   UserCircle,
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
   AlertCircle,
   Loader2,
   ArrowRight,
+  Camera,
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -55,8 +57,32 @@ export default function ProfilePage() {
 
   // State feedback
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg("Profile photo must be less than 10MB");
+      return;
+    }
+
+    try {
+      setAvatarUploading(true);
+      setErrorMsg(null);
+      const res = await api.uploadImages([file]);
+      if (res.data?.[0]?.url) {
+        setAvatar(res.data[0].url);
+        setSuccessMsg("Photo uploaded! Click 'Save Profile Changes' below to finalize.");
+      }
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to upload photo. Please try again.");
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Load user data on mount
   useEffect(() => {
@@ -201,12 +227,29 @@ export default function ProfilePage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-sm mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
-              <div className="relative w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="relative group w-20 h-20 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                 {avatar ? (
-                  <Image src={avatar} alt={name} fill sizes="64px" className="object-cover" />
+                  <Image src={avatar} alt={name} fill sizes="80px" className="object-cover" />
                 ) : (
-                  <UserCircle className="w-10 h-10 text-blue-600" />
+                  <UserCircle className="w-12 h-12 text-blue-600" />
                 )}
+                {/* Upload overlay on hover */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  title="Upload profile photo"
+                  className="absolute inset-0 bg-black/60 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {avatarUploading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                  ) : (
+                    <>
+                      <Camera className="w-5 h-5 mb-0.5" />
+                      <span className="text-[10px] font-bold">Change</span>
+                    </>
+                  )}
+                </button>
               </div>
               <div>
                 <div className="flex items-center space-x-2">
@@ -304,16 +347,13 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-gray-700 mb-1">Profile Photo Web Link</label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/avatar.jpg"
-                  value={avatar}
-                  onChange={(e) => setAvatar(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {/* Profile Photo Section */}
+              <ProfilePhotoSection
+                avatar={avatar}
+                onAvatarChange={setAvatar}
+                onUpload={handleAvatarUpload}
+                uploading={avatarUploading}
+              />
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-gray-700 mb-1">About / Bio</label>
