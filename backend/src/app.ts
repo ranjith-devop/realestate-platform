@@ -14,26 +14,37 @@ export const createApp = (): express.Application => {
 
   // Basic security and request parsing
   app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled for swagger-ui assets
+  // Strict CORS Security Whitelist
+  const allowedOrigins = [
+    ENV.CORS_ORIGIN,
+    "https://realestate-platform-horous.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ].filter(Boolean);
+
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (mobile/curl/server-to-server)
+        // Allow server-to-server / curl / Postman without origin header
         if (!origin) return callback(null, true);
-        if (
-          ENV.CORS_ORIGIN === "*" ||
-          origin === ENV.CORS_ORIGIN ||
-          origin.endsWith(".pages.dev") ||
-          origin.endsWith(".vercel.app") ||
-          origin.includes("localhost") ||
-          origin.includes("127.0.0.1")
-        ) {
+
+        // Strict production whitelist check
+        if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
-        return callback(null, true); // Permissive for preview and production deployments
+
+        // Allow official project preview deployments on Vercel
+        if (/^https:\/\/realestate-platform-[a-zA-Z0-9_-]+\.vercel\.app$/.test(origin)) {
+          return callback(null, true);
+        }
+
+        // Block all unauthorized origins
+        return callback(new Error(`CORS: Access denied for origin ${origin}`), false);
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
+      maxAge: 86400, // 24-hour preflight cache
     })
   );
 
