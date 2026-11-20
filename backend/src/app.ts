@@ -16,7 +16,21 @@ export const createApp = (): express.Application => {
   app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled for swagger-ui assets
   app.use(
     cors({
-      origin: [ENV.CORS_ORIGIN, "http://localhost:3000", "http://127.0.0.1:3000"],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile/curl/server-to-server)
+        if (!origin) return callback(null, true);
+        if (
+          ENV.CORS_ORIGIN === "*" ||
+          origin === ENV.CORS_ORIGIN ||
+          origin.endsWith(".pages.dev") ||
+          origin.endsWith(".vercel.app") ||
+          origin.includes("localhost") ||
+          origin.includes("127.0.0.1")
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true); // Permissive for preview and production deployments
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
